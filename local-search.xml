@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>.NET 6.0控制台程序，多环境配置</title>
+    <link href="/2023/08/21/net6-%E6%8E%A7%E5%88%B6%E5%8F%B0%E7%A8%8B%E5%BA%8F%EF%BC%8C%E5%A4%9A%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/"/>
+    <url>/2023/08/21/net6-%E6%8E%A7%E5%88%B6%E5%8F%B0%E7%A8%8B%E5%BA%8F%EF%BC%8C%E5%A4%9A%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</url>
+    
+    <content type="html"><![CDATA[<h2 id="NET-6-0控制台程序，多环境配置"><a href="#NET-6-0控制台程序，多环境配置" class="headerlink" title=".NET 6.0控制台程序，多环境配置"></a>.NET 6.0控制台程序，多环境配置</h2><h3 id="添加配置文件"><a href="#添加配置文件" class="headerlink" title="添加配置文件"></a>添加配置文件</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">ItemGroup</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">None</span> <span class="hljs-attr">Update</span>=<span class="hljs-string">&quot;appsettings.development.json&quot;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">CopyToOutputDirectory</span>&gt;</span>PreserveNewest<span class="hljs-tag">&lt;/<span class="hljs-name">CopyToOutputDirectory</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">None</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">None</span> <span class="hljs-attr">Update</span>=<span class="hljs-string">&quot;appsettings.json&quot;</span>&gt;</span><br>      <span class="hljs-tag">&lt;<span class="hljs-name">CopyToOutputDirectory</span>&gt;</span>PreserveNewest<span class="hljs-tag">&lt;/<span class="hljs-name">CopyToOutputDirectory</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">None</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">ItemGroup</span>&gt;</span><br></code></pre></td></tr></table></figure><p>配置文件：<code>appsettings.json</code></p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;cur&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;正式&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure><p>配置文件：<code>appsettings.development.json</code></p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;cur&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;测试&quot;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure><h3 id="Program-cs-根据环境读取配置"><a href="#Program-cs-根据环境读取配置" class="headerlink" title="Program.cs 根据环境读取配置"></a>Program.cs 根据环境读取配置</h3><figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs C#"><span class="hljs-comment">// See https://aka.ms/new-console-template for more information</span><br><span class="hljs-keyword">using</span> Microsoft.Extensions.Configuration;<br><span class="hljs-keyword">using</span> Microsoft.Extensions.DependencyInjection;<br><span class="hljs-keyword">using</span> Microsoft.Extensions.Hosting;<br><span class="hljs-keyword">using</span> System;<br><br><span class="hljs-keyword">internal</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Program</span><br>&#123;<br>    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Main</span>(<span class="hljs-params"><span class="hljs-built_in">string</span>[] args</span>)</span><br>    &#123;<br>        Console.WriteLine(<span class="hljs-string">&quot;Hello, World!&quot;</span>);<br><br><br>        <span class="hljs-keyword">var</span> host = Host.CreateDefaultBuilder(args)<br>        .ConfigureAppConfiguration((hostContext, configBuilder) =&gt;<br>        &#123;<br>            <span class="hljs-keyword">if</span> (hostContext.HostingEnvironment.IsDevelopment())<br>            &#123;<br>                configBuilder.AddJsonFile(<span class="hljs-string">&quot;appsettings.development.json&quot;</span>, optional: <span class="hljs-literal">true</span>, reloadOnChange: <span class="hljs-literal">true</span>);<br>            &#125;<br>            <span class="hljs-keyword">else</span><br>            &#123;<br>                configBuilder.AddJsonFile(<span class="hljs-string">&quot;appsettings.json&quot;</span>, optional: <span class="hljs-literal">true</span>, reloadOnChange: <span class="hljs-literal">true</span>);<br>            &#125; <br>        &#125;)<br>        .Build();<br><br>        <span class="hljs-keyword">var</span> configuration = host.Services.GetRequiredService&lt;IConfiguration&gt;();<br><br>        <span class="hljs-built_in">string</span>? someValue = configuration[<span class="hljs-string">&quot;cur&quot;</span>];<br><br>        Console.WriteLine(<span class="hljs-string">$&quot;读取：<span class="hljs-subst">&#123;someValue&#125;</span>&quot;</span>);<br>        Console.ReadLine();<br>    &#125;<br>&#125;<br><br></code></pre></td></tr></table></figure>]]></content>
+    
+    
+    
+    <tags>
+      
+      <tag>.NET 6.0</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>nvm使用指南</title>
     <link href="/2023/08/10/nvm%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/"/>
     <url>/2023/08/10/nvm%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/</url>
@@ -17,19 +36,6 @@
       <tag>使用指南</tag>
       
     </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>first</title>
-    <link href="/2023/08/10/first/"/>
-    <url>/2023/08/10/first/</url>
-    
-    <content type="html"><![CDATA[]]></content>
-    
-    
     
   </entry>
   
